@@ -2,38 +2,68 @@
 # Copyright (c) 2020
 # Do not alter anything or else the world will break
 
+
 # set the working directory
-Set-Location "C:\" # <-- set your directory
+Set-Location "C:\"
 
 # import the CSV file for folder creation
-$folders = Import-Csv -Delimiter "," -Header @("ID","caseName","caseNumber") -Path .\file.csv # <-- set your file.csv
+# create the headers for the file since CSVs dont have them
+$csvRows = Import-Csv -Delimiter "," -Header @("ID","name","number") -Path .\file.csv
 
 # begin the loop
-ForEach( $folder in $folders ) {
+	ForEach( $csvRow in $csvRows ) {
 
 	# create the variables
-	$columnID = $folder.ID
-	$columnCase = "{0} {1}" -f $folder.caseName, $folder.caseNumber # returns: "Column2 Column3"
+	$columnID = $csvRow.ID
+	$columnNameNumber = "{0} {1}"  -f $csvRow.name, $csvRow.number
+	$columnNumberName = "{1}, {0}" -f $csvRow.name, $csvRow.number
 
-	# if case name and number folder does NOT exist
-	if( -not ( Test-Path "$columnCase" ) ) {
-		New-Item "$columnCase" -ItemType Directory
+
+	#
+	# // MARK: begin main folder creation
+	#
+
+	# "SMITH 12345678" and "13246578, SMITH" do NOT exist
+	if( (-not ( Test-Path "$columnNameNumber" )) -and (-not ( Test-Path "$columnNumberName" )) ) {
+		# create the "12345678, SMITH"
+		New-Item "$columnNumberName" -ItemType Directory
 	}
 
-	# if case name and number folder does exist
+	# "SMITH 12345678" EXISTS but "13246578, SMITH" does NOT exist
+	if( ( Test-Path "$columnNameNumber" ) -and (-not ( Test-Path "$columnNumberName" )) ) {
+		# rename "SMITH 12345678" -> "12345678, SMITH"
+		Rename-Item "$columnNameNumber" -NewName $columnNumberName -Force
+	}
+
+	# "SMITH 12345678" does NOT exist but "13246578, SMITH" EXISTS
+	if( (-not ( Test-Path "$columnNameNumber" )) -and ( Test-Path "$columnNumberName" ) ) {
+		# do nothing
+	}
+
+	# "SMITH 12345678" and "13246578, SMITH" both EXIST
+	if( ( Test-Path "$columnNameNumber" ) -and ( Test-Path "$columnNumberName" ) ) {
+		# find all the items in $columnNameNumber
+		$subDirectory = Get-ChildItem $columnNameNumber -Name
+
+		# loop through and move to $columnNameNumberNew
+		ForEach( $childItem in $subDirectory ) {
+			Move-Item "$columnNameNumber\$childItem" -Destination "$columnNumberName"
+		}
+
+		# rename to know its done
+		if( ( Test-Path .\destination ) ) {
+			Move-Item "$columnNameNumber" -Destination .\destination
+		}
+	}
+
+
+	#
+	# // MARK: begin ID folder moves
+	#
+
+	# if "98765" folder exists
 	if( Test-Path "$columnID" ) {
-
-		# ID folder exists - move it
-		Move-Item "$columnID" -Destination "$columnCase" -Force
-
-	} elseif (Test-Path "$columnCase\$columnID" ) {
-
-		# ID folder DOES exist inside of the subdirectory
-
-	} else {
-
-		# ID doesn't exist - create it in the right spot
-		# New-Item "$columnCase\$columnID" -ItemType Directory
-
-   }
+		# move "98765" into "12345678, SMITH"
+		Move-Item "$columnID" -Destination "$columnNumberName"
+	}
 }
