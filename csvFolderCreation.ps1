@@ -11,7 +11,7 @@ Set-Location "C:\"
 $csvRows = Import-Csv -Delimiter "," -Header @("ID","name","number") -Path .\file.csv
 
 # begin the loop
-	ForEach( $csvRow in $csvRows ) {
+ForEach( $csvRow in $csvRows ) {
 
 	# create the variables
 	$columnID = $csvRow.ID
