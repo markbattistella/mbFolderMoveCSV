@@ -2,11 +2,17 @@
 # Copyright (c) 2020
 # Do not alter anything or else the world will break
 
+# fix the powershell scripts policy
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+
 # set the working directory
 Set-Location "C:\" # <-- set your directory
 
+# the CSV location
+$csvFile = ".\file.csv"
+
 # import the CSV file for folder creation
-$folders = Import-Csv -Delimiter "," -Header @("ID","caseName","caseNumber") -Path .\file.csv # <-- set your file.csv
+$folders = Import-Csv -Delimiter "," -Header @("ID","caseName","caseNumber") -Path $csvFile
 
 # begin the loop
 ForEach( $folder in $folders ) {
@@ -29,11 +35,12 @@ ForEach( $folder in $folders ) {
 	} elseif (Test-Path "$columnCase\$columnID" ) {
 
 		# ID folder DOES exist inside of the subdirectory
+		# do nothing now
 
 	} else {
 
 		# ID doesn't exist - create it in the right spot
-		# New-Item "$columnCase\$columnID" -ItemType Directory
+		New-Item "$columnCase\$columnID" -ItemType Directory
 
    }
 }

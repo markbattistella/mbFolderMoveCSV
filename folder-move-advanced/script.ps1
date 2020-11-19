@@ -1,17 +1,19 @@
-﻿# Code written by Mark Battistella
+# Code written by Mark Battistella
 # Copyright (c) 2020
 # Do not alter anything or else the world will break
-
 
 # fix the powershell scripts policy
 # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
 # the CSV location
-$csvFile = "B:\testScript\xDrive.csv"
+$csvFile = ".\file.csv"
 
 # import the CSV file for folder creation
 # create the headers for the file since CSVs dont have them
 $csvRows = Import-Csv -Delimiter "," -Header @("original","destination", "shortcut") -Path $csvFile
+
+# to see where we are at
+$loopIndex = 0;
 
 # begin the loop
 ForEach( $csvRow in $csvRows ) {
@@ -23,6 +25,17 @@ ForEach( $csvRow in $csvRows ) {
 
     # start a new shell object
     $WScriptShell = New-Object -ComObject WScript.Shell
+
+    # increase the index number
+    $loopIndex++;
+
+    #
+    # // MARK: break up the entries
+    #
+    Write-Host( "---" )
+    Write-Host( "$loopIndex" + " / " + $csvRows.Count )
+    Write-Host( $original )
+    Write-Host( "---" )
 
     #
     # // MARK: get the sub items
@@ -47,11 +60,23 @@ ForEach( $csvRow in $csvRows ) {
 
            } else {
 
-                # move them to the destination
-                Move-Item -Path ("$original" + "\" + "$originalChildItem") -Destination "$destination"
+                # if the file is a shortcut
+                $fileExtension = [IO.Path]::GetExtension($originalChildItem)
 
-                # // DEBUG: log move
-                Write-Host( "Moved to: " + "$destination" + "\" + $originalChildItem )
+                if( $fileExtension -eq ".lnk" ) {
+
+                    # // DEBUG: don't move shortcuts
+                    Write-Host( "Not moving shortcuts:" + "$destination" + "\" + $originalChildItem )
+
+                } else {
+
+                    # move them to the destination
+                    Move-Item -Path ("$original" + "\" + "$originalChildItem") -Destination "$destination"
+
+                    # // DEBUG: log move
+                    Write-Host( "Moved to: " + "$destination" + "\" + $originalChildItem )
+
+                }
            }
         }
     }

@@ -2,13 +2,17 @@
 # Copyright (c) 2020
 # Do not alter anything or else the world will break
 
+# fix the powershell scripts policy
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
 # set the working directory
-Set-Location "C:\"
+Set-Location "C:\" # <-- set your directory
+
+# the CSV location
+$csvFile = ".\file.csv"
 
 # import the CSV file for folder creation
-# create the headers for the file since CSVs dont have them
-$csvRows = Import-Csv -Delimiter "," -Header @("ID","name","number") -Path .\file.csv
+$folders = Import-Csv -Delimiter "," -Header @("ID","caseName","caseNumber") -Path $csvFile
 
 # begin the loop
 ForEach( $csvRow in $csvRows ) {
