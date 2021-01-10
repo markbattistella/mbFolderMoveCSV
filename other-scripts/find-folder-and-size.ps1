@@ -20,10 +20,14 @@ $csvRows = Import-Csv -Delimiter "," -Header @("ID") -Path $csvFile
 $loopIndex = 1;
 
 # search area
-$searchShare = "J:\"
+# `*\*\*` == number of levels to search
+$searchShare = "C:\"
 
 # if not in ISE
 if( $Host.name -notmatch "ISE" ) {
+
+    #clear console
+    clear
 
     # stop any other transcripts
     $ErrorActionPreference = "SilentlyContinue"
@@ -65,8 +69,8 @@ ForEach( $csvRow in $csvRows ) {
     $idSizeInGB = [math]::Round( $idSize / 1GB, 2 )
 
 	// print it out
-    Write-Host(
-        "$loopIndex/" + $csvRows.Count + "," + $idPathway + "," + $idSizeInGB
+	Write-Host(
+        "$loopIndex/" + $csvRows.Count + ",`"" + $idPathway + "`"," + $idSizeInGB
     );
 
     # increase the index number
